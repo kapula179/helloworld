@@ -1,373 +1,231 @@
 <!doctype html>
 <html lang="ja">
-<head>
 <meta charset="utf-8">
-<title>クリック入力 → テキスト/CSVコピー（投資対応）</title>
+<title>ワンクリ入力（9時以降 & 46枚対応）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root { --gap:10px; --pad:12px; }
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin:16px; line-height:1.5; }
-  h1 { font-size:18px; margin:0 0 8px; }
-  .grid { display:grid; gap: var(--gap); }
-  .card { border:1px solid #ddd; border-radius:12px; padding: var(--pad); }
-  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-  .btn { padding:8px 10px; border:1px solid #bbb; border-radius:10px; background:#fff; cursor:pointer; }
-  .btn.small { padding:6px 8px; font-size:12px; }
-  .btn.ghost { background:#f8f8f8; }
-  .chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .chip { padding:6px 10px; border:1px solid #ccc; border-radius:999px; cursor:pointer; background:#fff; }
-  .chip[data-active="1"] { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
-  input[type="text"], input[type="number"] { padding:8px; border:1px solid #bbb; border-radius:10px; }
-  input[type="number"] { width:120px; }
-  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f5f5f5; padding:2px 6px; border-radius:6px; border:1px solid #e6e6e6; }
-  .muted { color:#666; font-size:12px; }
-  textarea { width:100%; min-height:90px; padding:10px; border:1px solid #bbb; border-radius:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .cols { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .timegrid { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
-  .mins    { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
-  .notice { font-size:12px; color:#0a0; display:none; }
-  .numbox { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-  .numbox .step { display:flex; gap:6px; }
+  :root{--b:#ddd;--g:10px}
+  *{box-sizing:border-box} body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;margin:16px;line-height:1.5}
+  h1{font-size:18px;margin:0 0 8px} .grid{display:grid;gap:var(--g)} .card{border:1px solid var(--b);border-radius:12px;padding:12px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center} .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{border:1px solid #bbb;border-radius:10px;background:#fff;padding:6px 10px;cursor:pointer}
+  .chip{border:1px solid #bbb;border-radius:999px;padding:6px 10px;cursor:pointer;background:#fff}
+  .active{box-shadow:0 0 0 2px #111 inset;border-color:#111}
+  input[type="text"],input[type="number"]{border:1px solid #bbb;border-radius:10px;padding:8px}
+  textarea{width:100%;min-height:90px;border:1px solid #bbb;border-radius:10px;padding:10px;font-family:ui-monospace,monospace}
+  .cols{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .notice{font-size:12px;color:#0a0;display:none} .muted{color:#666;font-size:12px}
+  .grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 </style>
-</head>
-<body>
-  <h1>クリック入力 → 1行テキスト/CSVをコピー（投資対応）</h1>
-  <div class="grid">
 
-    <!-- 時間 -->
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <strong>時間</strong>
-        <div class="row">
-          <button class="btn small" id="btn-now">今</button>
-          <button class="btn small" data-step="5"  data-ctrl="min-plus">+5分</button>
-          <button class="btn small" data-step="5"  data-ctrl="min-minus">-5分</button>
-        </div>
-      </div>
-      <div class="cols">
-        <div>
-          <div class="muted">時を選択</div>
-          <div class="timegrid" id="hours"></div>
-        </div>
-        <div>
-          <div class="muted">分を選択</div>
-          <div class="mins" id="minutes"></div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <span class="muted">選択中：</span>
-        <span id="time-view" class="kbd">--:--</span>
-      </div>
-    </div>
+<h1>クリック入力 → 1行コピー（9時以降 & 46枚対応）</h1>
+<div class="grid">
 
-    <!-- 店名 -->
-    <div class="card">
-      <strong>店名</strong>
-      <div id="shops" class="chips" style="margin-top:6px"></div>
-      <div class="row" style="margin-top:8px">
-        <input id="shop-input" type="text" placeholder="店名を入力して追加">
-        <button class="btn" id="shop-add">＋追加</button>
-      </div>
-    </div>
-
-    <!-- 機種 -->
-    <div class="card">
-      <strong>機種</strong>
-      <div id="models" class="chips" style="margin-top:6px"></div>
-      <div class="row" style="margin-top:8px">
-        <input id="model-input" type="text" placeholder="機種名を入力して追加">
-        <button class="btn" id="model-add">＋追加</button>
-      </div>
-    </div>
-
-    <!-- 台番号 / 開始時データ / 投資 -->
-    <div class="card">
-      <strong>台番号・開始時データ・投資</strong>
-      <div class="cols" style="margin-top:6px">
-        <div class="row">
-          <span class="muted">台番号</span>
-          <input id="daino" type="number" inputmode="numeric" placeholder="例: 222">
-          <button class="btn small ghost" data-ctrl="daino-clear">クリア</button>
-        </div>
-
-        <!-- BIG -->
-        <div class="numbox">
-          <label>BIG</label>
-          <input id="big-input" type="number" inputmode="numeric" min="0" value="0">
-          <div class="step">
-            <button class="btn small" data-ctrl="big-+1">+1</button>
-            <button class="btn small" data-ctrl="big-+5">+5</button>
-            <button class="btn small" data-ctrl="big-+10">+10</button>
-            <button class="btn small" data-ctrl="big-+30">+30</button>
-            <button class="btn small ghost" data-ctrl="big-reset">0</button>
-          </div>
-        </div>
-
-        <!-- REG -->
-        <div class="numbox">
-          <label>REG</label>
-          <input id="reg-input" type="number" inputmode="numeric" min="0" value="0">
-          <div class="step">
-            <button class="btn small" data-ctrl="reg-+1">+1</button>
-            <button class="btn small" data-ctrl="reg-+5">+5</button>
-            <button class="btn small" data-ctrl="reg-+10">+10</button>
-            <button class="btn small ghost" data-ctrl="reg-reset">0</button>
-          </div>
-        </div>
-
-        <!-- G -->
-        <div class="numbox">
-          <label>G数</label>
-          <input id="g-input" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="step">
-            <button class="btn small" data-ctrl="g-+1">+1</button>
-            <button class="btn small" data-ctrl="g-+10">+10</button>
-            <button class="btn small" data-ctrl="g-+50">+50</button>
-            <button class="btn small" data-ctrl="g-+100">+100</button>
-            <button class="btn small ghost" data-ctrl="g-reset">0</button>
-          </div>
-        </div>
-
-        <!-- 投資：貯メダル / 現金 -->
-        <div class="numbox">
-          <label>貯メダル投資(枚)</label>
-          <input id="coin-input" type="number" inputmode="numeric" min="0" step="10" value="0">
-          <div class="step">
-            <button class="btn small" data-ctrl="coin-+10">+10</button>
-            <button class="btn small" data-ctrl="coin-+50">+50</button>
-            <button class="btn small" data-ctrl="coin-+100">+100</button>
-            <button class="btn small ghost" data-ctrl="coin-reset">0</button>
-          </div>
-        </div>
-
-        <div class="numbox">
-          <label>現金投資(円)</label>
-          <input id="cash-input" type="number" inputmode="numeric" min="0" step="1000" value="0">
-          <div class="step">
-            <button class="btn small" data-ctrl="cash-+1000">+1,000</button>
-            <button class="btn small" data-ctrl="cash-+2000">+2,000</button>
-            <button class="btn small" data-ctrl="cash-+5000">+5,000</button>
-            <button class="btn small ghost" data-ctrl="cash-reset">0</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 出力 -->
-    <div class="card">
-      <div class="row" style="justify-content:space-between;">
-        <strong>出力（1行）</strong>
-        <div class="row">
-          <label class="row"><input type="radio" name="fmt" value="text" checked> テキスト</label>
-          <label class="row"><input type="radio" name="fmt" value="csv"> CSV</label>
-        </div>
-      </div>
-      <textarea id="out" readonly></textarea>
+  <!-- 時間 -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <strong>時間</strong>
       <div class="row">
-        <button class="btn" id="copy">コピー</button>
-        <button class="btn" id="clear">クリア</button>
-        <span id="copied" class="notice">コピーしました！</span>
-      </div>
-      <div class="muted" style="margin-top:6px">
-        例（テキスト）：<span class="kbd">10:07 ZAPP高陽 新花火 台番180 開始 0.0.240 投資 300枚/9000円</span><br>
-        例（CSV）：<span class="kbd">10:07,ZAPP高陽,新花火,180,0,0,240,300,9000</span>
+        <button class="btn" id="now">今</button>
+        <button class="btn" data-min="+5">+5分</button>
+        <button class="btn" data-min="-5">-5分</button>
       </div>
     </div>
-
+    <div class="cols">
+      <div><div class="muted">時（9-23）</div><div id="hours" class="grid6"></div></div>
+      <div><div class="muted">分</div><div id="mins"  class="grid6"></div></div>
+    </div>
+    <div class="row" style="margin-top:6px"><span class="muted">選択中：</span><code id="timev">--:--</code></div>
   </div>
 
+  <!-- 店名 -->
+  <div class="card">
+    <strong>店名</strong>
+    <div id="shops" class="chips" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:6px">
+      <input id="shop-in" placeholder="店名を入力して追加"><button class="btn" data-add="shop">＋追加</button>
+    </div>
+  </div>
+
+  <!-- 機種 -->
+  <div class="card">
+    <strong>機種</strong>
+    <div id="models" class="chips" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:6px">
+      <input id="model-in" placeholder="機種名を入力して追加"><button class="btn" data-add="model">＋追加</button>
+    </div>
+  </div>
+
+  <!-- 台・開始データ・投資 -->
+  <div class="card">
+    <strong>台番号・開始データ・投資</strong>
+    <div class="cols" style="margin-top:6px">
+      <div class="row"><span class="muted">台番号</span><input id="daino" type="number" inputmode="numeric" style="width:120px"><button class="btn" id="daino-clear">クリア</button></div>
+
+      <div class="row" data-box="big"><label>BIG</label>
+        <input class="num" data-key="big" type="number" min="0" value="0" style="width:110px">
+        <button class="btn" data-inc="1">+1</button><button class="btn" data-inc="5">+5</button>
+        <button class="btn" data-inc="10">+10</button><button class="btn" data-inc="30">+30</button>
+        <button class="btn" data-reset>0</button>
+      </div>
+
+      <div class="row" data-box="reg"><label>REG</label>
+        <input class="num" data-key="reg" type="number" min="0" value="0" style="width:110px">
+        <button class="btn" data-inc="1">+1</button><button class="btn" data-inc="5">+5</button>
+        <button class="btn" data-inc="10">+10</button><button class="btn" data-reset>0</button>
+      </div>
+
+      <div class="row" data-box="g"><label>G数</label>
+        <input class="num" data-key="g" type="number" min="0" value="0" style="width:110px">
+        <button class="btn" data-inc="1">+1</button><button class="btn" data-inc="10">+10</button>
+        <button class="btn" data-inc="50">+50</button><button class="btn" data-inc="100">+100</button>
+        <button class="btn" data-reset>0</button>
+      </div>
+
+      <div class="row" data-box="coin"><label>貯メダル(枚)</label>
+        <input class="num" data-key="coin" type="number" min="0" value="0" style="width:120px">
+        <button class="btn" data-inc="46">+46</button>
+        <button class="btn" data-inc="10">+10</button><button class="btn" data-inc="50">+50</button>
+        <button class="btn" data-inc="100">+100</button><button class="btn" data-reset>0</button>
+      </div>
+
+      <div class="row" data-box="cash"><label>現金(円)</label>
+        <input class="num" data-key="cash" type="number" min="0" value="0" style="width:120px">
+        <button class="btn" data-inc="1000">+1,000</button><button class="btn" data-inc="2000">+2,000</button>
+        <button class="btn" data-inc="5000">+5,000</button><button class="btn" data-reset>0</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 出力 -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <strong>出力（1行）</strong>
+      <div class="row">
+        <label class="row"><input type="radio" name="fmt" value="text" checked>テキスト</label>
+        <label class="row"><input type="radio" name="fmt" value="csv">CSV</label>
+      </div>
+    </div>
+    <textarea id="out" readonly></textarea>
+    <div class="row">
+      <button class="btn" id="copy">コピー</button>
+      <button class="btn" id="clear">クリア</button>
+      <span id="copied" class="notice">コピーしました！</span>
+    </div>
+    <div class="muted" style="margin-top:6px">
+      例(テキスト): <code>10:07 ZAPP高陽 新花火 台番180 開始 0.0.240 投資 300枚/9000円</code><br>
+      例(CSV): <code>10:07,ZAPP高陽,新花火,180,0,0,240,300,9000</code>
+    </div>
+  </div>
+</div>
+
 <script>
-  // ===== プリセット（必要に応じて編集） =====
-  const PRESET_SHOPS = ["ZAPP高陽", "スーパーランド", "タワービクトリー", "サンズビクトリー", "BB東雲", "ナイアガラ2"];
-  const PRESET_MODELS = ["新花火", "マイジャグラー", "ハッピージャグラー", "ファンキージャグラー", "バーサス", "北斗", "マタドール"];
+  // ===== 初期データ =====
+  const SHOPS=["ZAPP高陽","スーパーランド","タワービクトリー","サンズビクトリー","BB東雲","ナイアガラ2"];
+  const MODELS=["新花火","マイジャグラー","ハッピージャグラー","ファンキージャグラー","バーサス","北斗","マタドール"];
+  const MIN_MINUTES = 9*60;          // 9:00 を下限
+  const MAX_MINUTES = 23*60 + 55;    // 23:55 を上限
+  const S={h:null,m:null,shop:"",model:"",daino:"",big:0,reg:0,g:0,coin:0,cash:0,fmt:"text"};
+  const z2=n=>String(n).padStart(2,"0"), clamp0=n=>Math.max(0,(parseInt(n,10)||0));
+  const $=s=>document.querySelector(s);
 
-  // ===== 状態 =====
-  const state = {
-    hour: null, minute: null,
-    shop: "", model: "",
-    daino: "",
-    big: 0, reg: 0, g: 0,
-    coin: 0, cash: 0,
-    fmt: "text"
-  };
-
-  // ===== ユーティリティ =====
-  const z2 = n => String(n).padStart(2, "0");
-  const clamp0 = n => Math.max(0, (parseInt(n,10)||0));
-
-  function renderTime() {
-    const t = (state.hour==null || state.minute==null) ? "--:--" : `${z2(state.hour)}:${z2(state.minute)}`;
-    document.getElementById("time-view").textContent = t;
-  }
-
-  function getTimeString(){
-    return (state.hour==null || state.minute==null) ? "" : `${z2(state.hour)}:${z2(state.minute)}`;
-  }
-
-  function renderOutput() {
-    const t = getTimeString();
-    const daino = state.daino ? ` 台番${state.daino}` : "";
-    const start = `${state.big}.${state.reg}.${state.g}`;
-    const investText = (state.coin||state.cash) ? ` 投資 ${state.coin}枚/${state.cash}円` : "";
-    let line = "";
-
-    if (state.fmt === "csv") {
-      // 時間,店名,機種,台番号,開始BIG,開始REG,開始回転数,貯メダル投資(枚),現金投資(円)
-      line = [t, state.shop, state.model, state.daino, state.big, state.reg, state.g, state.coin, state.cash].join(",");
-    } else {
-      line = `${t} ${state.shop} ${state.model}${daino} 開始 ${start}${investText}`.trim();
+  // ===== 時間 UI =====
+  (function initTime(){
+    const H=$("#hours"),M=$("#mins");
+    for(let i=9;i<=23;i++){ // 9〜23時のみ
+      const b=document.createElement("button"); b.className="btn"; b.textContent=z2(i); b.dataset.hour=i; H.appendChild(b);
     }
-    document.getElementById("out").value = line.replace(/\s+/g, " ").trim();
-  }
+    [0,5,10,15,20,25,30,35,40,45,50,55].forEach(v=>{
+      const b=document.createElement("button"); b.className="btn"; b.textContent=z2(v); b.dataset.min=v; M.appendChild(b);
+    });
 
-  function setActive(container, value) {
-    [...container.children].forEach(ch => ch.dataset.active = (ch.textContent === value) ? "1" : "0");
-  }
-
-  // ===== 時間UI生成 =====
-  const hoursEl = document.getElementById("hours");
-  for (let h=0; h<24; h++) {
-    const b = document.createElement("button");
-    b.className = "btn small";
-    b.textContent = z2(h);
-    b.onclick = () => { state.hour = h; renderTime(); renderOutput(); setActive(hoursEl, z2(h)); };
-    hoursEl.appendChild(b);
-  }
-  const minutesEl = document.getElementById("minutes");
-  const MIN_STEPS = [0,5,10,15,20,25,30,35,40,45,50,55];
-  MIN_STEPS.forEach(m => {
-    const b = document.createElement("button");
-    b.className = "btn small";
-    b.textContent = z2(m);
-    b.onclick = () => { state.minute = m; renderTime(); renderOutput(); setActive(minutesEl, z2(m)); };
-    minutesEl.appendChild(b);
-  });
-  document.getElementById("btn-now").onclick = () => {
-    const d = new Date();
-    state.hour = d.getHours(); state.minute = d.getMinutes() - (d.getMinutes() % 5);
-    renderTime(); renderOutput();
-    setActive(hoursEl, z2(state.hour));
-    setActive(minutesEl, z2(state.minute));
-  };
-  document.querySelectorAll("[data-ctrl='min-plus'],[data-ctrl='min-minus']").forEach(btn=>{
-    btn.onclick = () => {
-      if (state.hour==null || state.minute==null) return;
-      const step = parseInt(btn.dataset.step||"5",10) * (btn.dataset.ctrl.includes("minus")?-1:1);
-      let total = state.hour*60 + state.minute + step;
-      total = Math.min(Math.max(total,0), 23*60+55);
-      state.hour = Math.floor(total/60);
-      state.minute = total%60 - (total%5);
-      renderTime(); renderOutput();
-      setActive(hoursEl, z2(state.hour));
-      setActive(minutesEl, z2(state.minute));
+    $("#now").onclick=()=>{
+      const d=new Date();
+      let h=d.getHours(), m=d.getMinutes()-d.getMinutes()%5;
+      if(h<9){ h=9; m=0; } // 9時未満なら 9:00 に丸め
+      if(h>23){ h=23; m=55; }
+      S.h=h; S.m=m; markTime(); render();
     };
-  });
 
-  // ===== 店名・機種 chips =====
-  function makeChips(list, mount, setter) {
-    mount.innerHTML = "";
-    list.forEach(txt=>{
-      const el = document.createElement("div");
-      el.className = "chip";
-      el.textContent = txt;
-      el.onclick = () => { setter(txt); };
-      mount.appendChild(el);
+    $("#hours").addEventListener("click",e=>{
+      if(e.target.dataset.hour!=null){ S.h=+e.target.dataset.hour; markTime(); render(); }
+    });
+    $("#mins").addEventListener("click",e=>{
+      if(e.target.dataset.min!=null){ S.m=+e.target.dataset.min; markTime(); render(); }
+    });
+
+    // ±分（グローバル委譲）
+    document.addEventListener("click",e=>{
+      const d=e.target.dataset.min; if(!d || S.h==null || S.m==null) return;
+      let tot=S.h*60+S.m+parseInt(d,10);
+      tot=Math.min(Math.max(tot, MIN_MINUTES), MAX_MINUTES);
+      S.h=Math.floor(tot/60); S.m=tot%60 - (tot%5);
+      markTime(); render();
+    }, true);
+
+    function markTime(){
+      $("#timev").textContent=(S.h==null||S.m==null)?"--:--":`${z2(S.h)}:${z2(S.m)}`;
+      [...H.children].forEach(b=>b.classList.toggle("active",+b.dataset.hour===S.h));
+      [...M.children].forEach(b=>b.classList.toggle("active",+b.dataset.min===S.m));
+    }
+  })();
+
+  // ===== 店・機種 chips =====
+  function makeChips(list, mountId, setKey){
+    const el=$(mountId); el.innerHTML="";
+    list.forEach(t=>{
+      const c=document.createElement("div"); c.className="chip"; c.textContent=t;
+      c.onclick=()=>{ S[setKey]=t; [...el.children].forEach(x=>x.classList.toggle("active",x===c)); render(); };
+      el.appendChild(c);
     });
   }
-  const shopsEl = document.getElementById("shops");
-  const modelsEl = document.getElementById("models");
-  let shops = [...PRESET_SHOPS];
-  let models = [...PRESET_MODELS];
-
-  function setShop(v){ state.shop = v; setActive(shopsEl, v); renderOutput(); }
-  function setModel(v){ state.model = v; setActive(modelsEl, v); renderOutput(); }
-
-  makeChips(shops, shopsEl, setShop);
-  makeChips(models, modelsEl, setModel);
-
-  document.getElementById("shop-add").onclick = ()=>{
-    const v = document.getElementById("shop-input").value.trim();
-    if(!v) return;
-    shops.unshift(v);
-    makeChips(shops, shopsEl, setShop);
-    setShop(v);
-    document.getElementById("shop-input").value = "";
-  };
-  document.getElementById("model-add").onclick = ()=>{
-    const v = document.getElementById("model-input").value.trim();
-    if(!v) return;
-    models.unshift(v);
-    makeChips(models, modelsEl, setModel);
-    setModel(v);
-    document.getElementById("model-input").value = "";
-  };
-
-  // ===== 数値入力ヘルパ =====
-  function bindNumber(id, key) {
-    const el = document.getElementById(id);
-    el.addEventListener("input", ()=>{ state[key] = clamp0(el.value); renderOutput(); });
-  }
-  bindNumber("big-input",  "big");
-  bindNumber("reg-input",  "reg");
-  bindNumber("g-input",    "g");
-  bindNumber("coin-input", "coin");
-  bindNumber("cash-input", "cash");
-
-  const daino = document.getElementById("daino");
-  daino.addEventListener("input", ()=>{ state.daino = daino.value.replace(/[^\d]/g,""); daino.value = state.daino; renderOutput(); });
-  document.querySelector("[data-ctrl='daino-clear']").onclick = ()=>{ state.daino=""; daino.value=""; renderOutput(); };
-
-  // ===== ＋ボタン群 =====
-  const inc = (k, by)=>{ state[k] = clamp0(state[k] + by); document.getElementById(`${k}-input`).value = state[k]; renderOutput(); };
-  const resets = {
-    "big-reset": ()=>{ state.big=0; document.getElementById("big-input").value=0; },
-    "reg-reset": ()=>{ state.reg=0; document.getElementById("reg-input").value=0; },
-    "g-reset":   ()=>{ state.g=0;   document.getElementById("g-input").value=0;   },
-    "coin-reset":()=>{ state.coin=0;document.getElementById("coin-input").value=0;},
-    "cash-reset":()=>{ state.cash=0;document.getElementById("cash-input").value=0;}
-  };
-
-  document.querySelectorAll("[data-ctrl]").forEach(btn=>{
-    const c = btn.dataset.ctrl;
-    if (c.startsWith("big-+"))  btn.onclick = ()=> inc("big",  parseInt(c.split("+")[1],10));
-    if (c.startsWith("reg-+"))  btn.onclick = ()=> inc("reg",  parseInt(c.split("+")[1],10));
-    if (c.startsWith("g-+"))    btn.onclick = ()=> inc("g",    parseInt(c.split("+")[1],10));
-    if (c.startsWith("coin-+")) btn.onclick = ()=> inc("coin", parseInt(c.split("+")[1],10));
-    if (c.startsWith("cash-+")) btn.onclick = ()=> inc("cash", parseInt(c.split("+")[1],10));
-    if (resets[c]) btn.onclick = ()=>{ resets[c](); renderOutput(); };
+  makeChips(SHOPS,"#shops","shop");
+  makeChips(MODELS,"#models","model");
+  document.addEventListener("click",e=>{
+    if(e.target.dataset.add==="shop"){ const v=$("#shop-in").value.trim(); if(v){ SHOPS.unshift(v); makeChips(SHOPS,"#shops","shop"); S.shop=v; render(); $("#shop-in").value=""; } }
+    if(e.target.dataset.add==="model"){ const v=$("#model-in").value.trim(); if(v){ MODELS.unshift(v); makeChips(MODELS,"#models","model"); S.model=v; render(); $("#model-in").value=""; } }
   });
 
-  // ===== 出力 =====
-  document.querySelectorAll("input[name='fmt']").forEach(r=>{
-    r.onchange = ()=>{ state.fmt = r.value; renderOutput(); };
-  });
+  // ===== 台番号 =====
+  $("#daino").addEventListener("input",()=>{ S.daino=$("#daino").value.replace(/[^\d]/g,""); $("#daino").value=S.daino; render(); });
+  $("#daino-clear").onclick=()=>{ S.daino=""; $("#daino").value=""; render(); };
 
-  document.getElementById("copy").onclick = async ()=>{
-    const txt = document.getElementById("out").value;
-    try { await navigator.clipboard.writeText(txt); } catch(e) {
-      const ta = document.getElementById("out");
-      ta.select(); document.execCommand("copy");
+  // ===== 数値コントロール（委譲） =====
+  document.addEventListener("input",e=>{
+    if(e.target.classList.contains("num")){
+      const k=e.target.dataset.key; S[k]=clamp0(e.target.value); render();
     }
-    const n = document.getElementById("copied");
-    n.style.display = "inline";
-    setTimeout(()=> n.style.display = "none", 1200);
+  });
+  document.addEventListener("click",e=>{
+    const box=e.target.closest("[data-box]"); if(!box) return;
+    const key=box.dataset.box;
+    if(e.target.hasAttribute("data-inc")){ S[key]=clamp0(S[key]+parseInt(e.target.dataset.inc,10)); box.querySelector(".num").value=S[key]; render(); }
+    if(e.target.hasAttribute("data-reset")){ S[key]=0; box.querySelector(".num").value=0; render(); }
+  });
+
+  // ===== 出力・コピー・クリア =====
+  document.querySelectorAll("input[name='fmt']").forEach(r=> r.onchange=()=>{ S.fmt=r.value; render(); });
+  $("#copy").onclick=async()=>{
+    try{ await navigator.clipboard.writeText($("#out").value); }catch(_){ const ta=$("#out"); ta.select(); document.execCommand("copy"); }
+    const n=$("#copied"); n.style.display="inline"; setTimeout(()=>n.style.display="none",1000);
+  };
+  $("#clear").onclick=()=>{
+    Object.assign(S,{h:null,m:null,shop:"",model:"",daino:"",big:0,reg:0,g:0,coin:0,cash:0});
+    ["big","reg","g","coin","cash"].forEach(k=>document.querySelector(`[data-box="${k}"] .num`).value=0);
+    $("#daino").value=""; $("#timev").textContent="--:--"; render();
   };
 
-  document.getElementById("clear").onclick = ()=>{
-    state.hour = state.minute = null;
-    state.shop = state.model = ""; state.daino = "";
-    state.big = state.reg = state.g = 0;
-    state.coin = state.cash = 0;
-    ["big","reg","g","coin","cash"].forEach(k=> document.getElementById(`${k}-input`).value=0);
-    document.getElementById("daino").value = "";
-    renderTime(); renderOutput();
-    setActive(shopsEl, "_"); setActive(modelsEl, "_");
-    document.getElementById("out").value = "";
-  };
-
-  // 初期描画
-  renderTime(); renderOutput();
+  // ===== 出力生成 =====
+  function render(){
+    const t=(S.h==null||S.m==null)?"":`${z2(S.h)}:${z2(S.m)}`;
+    const d=S.daino?` 台番${S.daino}`:"";
+    const start=`${S.big}.${S.reg}.${S.g}`;
+    const invest=(S.coin||S.cash)?` 投資 ${S.coin}枚/${S.cash}円`:"";
+    const line = S.fmt==="csv"
+      ? [t,S.shop,S.model,S.daino,S.big,S.reg,S.g,S.coin,S.cash].join(",")
+      : `${t} ${S.shop} ${S.model}${d} 開始 ${start}${invest}`.trim().replace(/\s+/g," ");
+    $("#out").value=line;
+  }
+  render();
 </script>
-</body>
 </html>
