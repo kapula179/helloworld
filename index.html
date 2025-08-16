@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <meta charset="utf-8">
-<title>ワンクリ入力（9時以降 & 46枚対応）</title>
+<title>ワンクリ入力（初期値プリセット版）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root{--b:#ddd;--g:10px}
@@ -18,7 +18,7 @@
   .grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 </style>
 
-<h1>クリック入力 → 1行コピー（9時以降 & 46枚対応）</h1>
+<h1>クリック入力 → 1行コピー（初期値プリセット）</h1>
 <div class="grid">
 
   <!-- 時間 -->
@@ -112,10 +112,6 @@
       <button class="btn" id="clear">クリア</button>
       <span id="copied" class="notice">コピーしました！</span>
     </div>
-    <div class="muted" style="margin-top:6px">
-      例(テキスト): <code>10:07 ZAPP高陽 新花火 台番180 開始 0.0.240 投資 300枚/9000円</code><br>
-      例(CSV): <code>10:07,ZAPP高陽,新花火,180,0,0,240,300,9000</code>
-    </div>
   </div>
 </div>
 
@@ -123,109 +119,82 @@
   // ===== 初期データ =====
   const SHOPS=["ZAPP高陽","スーパーランド","タワービクトリー","サンズビクトリー","BB東雲","ナイアガラ2"];
   const MODELS=["新花火","マイジャグラー","ハッピージャグラー","ファンキージャグラー","バーサス","北斗","マタドール"];
-  const MIN_MINUTES = 9*60;          // 9:00 を下限
-  const MAX_MINUTES = 23*60 + 55;    // 23:55 を上限
+  const MIN_MINUTES=9*60, MAX_MINUTES=23*60+55;
   const S={h:null,m:null,shop:"",model:"",daino:"",big:0,reg:0,g:0,coin:0,cash:0,fmt:"text"};
   const z2=n=>String(n).padStart(2,"0"), clamp0=n=>Math.max(0,(parseInt(n,10)||0));
   const $=s=>document.querySelector(s);
 
   // ===== 時間 UI =====
-  (function initTime(){
+  function initTime(){
     const H=$("#hours"),M=$("#mins");
-    for(let i=9;i<=23;i++){ // 9〜23時のみ
-      const b=document.createElement("button"); b.className="btn"; b.textContent=z2(i); b.dataset.hour=i; H.appendChild(b);
-    }
-    [0,5,10,15,20,25,30,35,40,45,50,55].forEach(v=>{
-      const b=document.createElement("button"); b.className="btn"; b.textContent=z2(v); b.dataset.min=v; M.appendChild(b);
-    });
+    for(let i=9;i<=23;i++){ const b=document.createElement("button"); b.className="btn"; b.textContent=z2(i); b.dataset.hour=i; H.appendChild(b);}
+    [0,5,10,15,20,25,30,35,40,45,50,55].forEach(v=>{const b=document.createElement("button"); b.className="btn"; b.textContent=z2(v); b.dataset.min=v; M.appendChild(b);});
 
-    $("#now").onclick=()=>{
-      const d=new Date();
-      let h=d.getHours(), m=d.getMinutes()-d.getMinutes()%5;
-      if(h<9){ h=9; m=0; } // 9時未満なら 9:00 に丸め
-      if(h>23){ h=23; m=55; }
-      S.h=h; S.m=m; markTime(); render();
-    };
-
-    $("#hours").addEventListener("click",e=>{
-      if(e.target.dataset.hour!=null){ S.h=+e.target.dataset.hour; markTime(); render(); }
-    });
-    $("#mins").addEventListener("click",e=>{
-      if(e.target.dataset.min!=null){ S.m=+e.target.dataset.min; markTime(); render(); }
-    });
-
-    // ±分（グローバル委譲）
+    $("#now").onclick=()=>{ setNow(); markTime(); render(); }
+    $("#hours").addEventListener("click",e=>{if(e.target.dataset.hour!=null){S.h=+e.target.dataset.hour; markTime(); render();}});
+    $("#mins").addEventListener("click",e=>{if(e.target.dataset.min!=null){S.m=+e.target.dataset.min; markTime(); render();}});
     document.addEventListener("click",e=>{
-      const d=e.target.dataset.min; if(!d || S.h==null || S.m==null) return;
-      let tot=S.h*60+S.m+parseInt(d,10);
-      tot=Math.min(Math.max(tot, MIN_MINUTES), MAX_MINUTES);
-      S.h=Math.floor(tot/60); S.m=tot%60 - (tot%5);
-      markTime(); render();
-    }, true);
+      const d=e.target.dataset.min; if(!d||S.h==null||S.m==null)return;
+      let tot=S.h*60+S.m+parseInt(d,10); tot=Math.min(Math.max(tot,MIN_MINUTES),MAX_MINUTES);
+      S.h=Math.floor(tot/60); S.m=tot%60-(tot%5); markTime(); render();
+    },true);
 
-    function markTime(){
-      $("#timev").textContent=(S.h==null||S.m==null)?"--:--":`${z2(S.h)}:${z2(S.m)}`;
+    function markTime(){ $("#timev").textContent=(S.h==null||S.m==null)?"--:--":`${z2(S.h)}:${z2(S.m)}`;
       [...H.children].forEach(b=>b.classList.toggle("active",+b.dataset.hour===S.h));
-      [...M.children].forEach(b=>b.classList.toggle("active",+b.dataset.min===S.m));
-    }
-  })();
+      [...M.children].forEach(b=>b.classList.toggle("active",+b.dataset.min===S.m)); }
+  }
+  function setNow(){
+    const d=new Date(); let h=d.getHours(),m=d.getMinutes()-d.getMinutes()%5;
+    if(h<9){h=9;m=0;} if(h>23){h=23;m=55;} S.h=h; S.m=m;
+  }
 
   // ===== 店・機種 chips =====
-  function makeChips(list, mountId, setKey){
+  function makeChips(list,mountId,setKey){
     const el=$(mountId); el.innerHTML="";
-    list.forEach(t=>{
-      const c=document.createElement("div"); c.className="chip"; c.textContent=t;
-      c.onclick=()=>{ S[setKey]=t; [...el.children].forEach(x=>x.classList.toggle("active",x===c)); render(); };
-      el.appendChild(c);
-    });
+    list.forEach(t=>{ const c=document.createElement("div"); c.className="chip"; c.textContent=t;
+      c.onclick=()=>{S[setKey]=t;[...el.children].forEach(x=>x.classList.toggle("active",x===c)); render();};
+      el.appendChild(c);});
   }
-  makeChips(SHOPS,"#shops","shop");
-  makeChips(MODELS,"#models","model");
-  document.addEventListener("click",e=>{
-    if(e.target.dataset.add==="shop"){ const v=$("#shop-in").value.trim(); if(v){ SHOPS.unshift(v); makeChips(SHOPS,"#shops","shop"); S.shop=v; render(); $("#shop-in").value=""; } }
-    if(e.target.dataset.add==="model"){ const v=$("#model-in").value.trim(); if(v){ MODELS.unshift(v); makeChips(MODELS,"#models","model"); S.model=v; render(); $("#model-in").value=""; } }
-  });
-
-  // ===== 台番号 =====
-  $("#daino").addEventListener("input",()=>{ S.daino=$("#daino").value.replace(/[^\d]/g,""); $("#daino").value=S.daino; render(); });
-  $("#daino-clear").onclick=()=>{ S.daino=""; $("#daino").value=""; render(); };
-
-  // ===== 数値コントロール（委譲） =====
-  document.addEventListener("input",e=>{
-    if(e.target.classList.contains("num")){
-      const k=e.target.dataset.key; S[k]=clamp0(e.target.value); render();
-    }
-  });
-  document.addEventListener("click",e=>{
-    const box=e.target.closest("[data-box]"); if(!box) return;
-    const key=box.dataset.box;
-    if(e.target.hasAttribute("data-inc")){ S[key]=clamp0(S[key]+parseInt(e.target.dataset.inc,10)); box.querySelector(".num").value=S[key]; render(); }
-    if(e.target.hasAttribute("data-reset")){ S[key]=0; box.querySelector(".num").value=0; render(); }
-  });
-
-  // ===== 出力・コピー・クリア =====
-  document.querySelectorAll("input[name='fmt']").forEach(r=> r.onchange=()=>{ S.fmt=r.value; render(); });
-  $("#copy").onclick=async()=>{
-    try{ await navigator.clipboard.writeText($("#out").value); }catch(_){ const ta=$("#out"); ta.select(); document.execCommand("copy"); }
-    const n=$("#copied"); n.style.display="inline"; setTimeout(()=>n.style.display="none",1000);
-  };
-  $("#clear").onclick=()=>{
-    Object.assign(S,{h:null,m:null,shop:"",model:"",daino:"",big:0,reg:0,g:0,coin:0,cash:0});
-    ["big","reg","g","coin","cash"].forEach(k=>document.querySelector(`[data-box="${k}"] .num`).value=0);
-    $("#daino").value=""; $("#timev").textContent="--:--"; render();
-  };
 
   // ===== 出力生成 =====
   function render(){
-    const t=(S.h==null||S.m==null)?"":`${z2(S.h)}:${z2(S.m)}`;
-    const d=S.daino?` 台番${S.daino}`:"";
-    const start=`${S.big}.${S.reg}.${S.g}`;
-    const invest=(S.coin||S.cash)?` 投資 ${S.coin}枚/${S.cash}円`:"";
-    const line = S.fmt==="csv"
+    const t=(S.h==null||S.m==null)?"":`${z2(S.h)}:${z2(S.m)}`, d=S.daino?` 台番${S.daino}`:"";
+    const start=`${S.big}.${S.reg}.${S.g}`, invest=(S.coin||S.cash)?` 投資 ${S.coin}枚/${S.cash}円`:"";
+    const line=S.fmt==="csv"
       ? [t,S.shop,S.model,S.daino,S.big,S.reg,S.g,S.coin,S.cash].join(",")
       : `${t} ${S.shop} ${S.model}${d} 開始 ${start}${invest}`.trim().replace(/\s+/g," ");
     $("#out").value=line;
+    $("#timev").textContent=t||"--:--";
+    [...$("#shops").children].forEach(ch=>ch.classList.toggle("active",ch.textContent===S.shop));
+    [...$("#models").children].forEach(ch=>ch.classList.toggle("active",ch.textContent===S.model));
   }
-  render();
+
+  // ===== 初期化 =====
+  window.addEventListener("DOMContentLoaded",()=>{
+    initTime();
+    makeChips(SHOPS,"#shops","shop");
+    makeChips(MODELS,"#models","model");
+    // 初期値をセット
+    setNow();
+    S.shop="ZAPP高陽";
+    S.model="新花火";
+    render();
+  });
+
+  // ===== 台番号・数値入力・コピー等（省略した前回部分そのまま） =====
+  $("#daino").addEventListener("input",()=>{S.daino=$("#daino").value.replace(/[^\d]/g,"");$("#daino").value=S.daino;render();});
+  $("#daino-clear").onclick=()=>{S.daino="";$("#daino").value="";render();};
+  document.addEventListener("input",e=>{if(e.target.classList.contains("num")){S[e.target.dataset.key]=clamp0(e.target.value);render();}});
+  document.addEventListener("click",e=>{
+    const box=e.target.closest("[data-box]");if(!box)return;const key=box.dataset.box;
+    if(e.target.hasAttribute("data-inc")){S[key]=clamp0(S[key]+parseInt(e.target.dataset.inc,10));box.querySelector(".num").value=S[key];render();}
+    if(e.target.hasAttribute("data-reset")){S[key]=0;box.querySelector(".num").value=0;render();}
+  });
+  document.querySelectorAll("input[name='fmt']").forEach(r=>r.onchange=()=>{S.fmt=r.value;render();});
+  $("#copy").onclick=async()=>{try{await navigator.clipboard.writeText($("#out").value);}catch(_){const ta=$("#out");ta.select();document.execCommand("copy");}
+    const n=$("#copied");n.style.display="inline";setTimeout(()=>n.style.display="none",1000);};
+  $("#clear").onclick=()=>{Object.assign(S,{h:null,m:null,shop:"",model:"",daino:"",big:0,reg:0,g:0,coin:0,cash:0});
+    ["big","reg","g","coin","cash"].forEach(k=>document.querySelector(`[data-box="${k}"] .num`).value=0);
+    $("#daino").value="";$("#timev").textContent="--:--";render();};
 </script>
 </html>
