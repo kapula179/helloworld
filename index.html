@@ -1,702 +1,325 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#007BFF" />
-  <title>マイジャグラー稼働記録 Pro</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      min-height: 100vh;
-      padding: 10px;
-    }
-    
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    header {
-      text-align: center;
-      padding: 1em 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      margin-bottom: 20px;
-    }
-    
-    .section {
-      margin-bottom: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    h1 { 
-      margin: 0; 
-      font-size: 1.8em; 
-      font-weight: 600;
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    h2 {
-      margin: 0 0 8px 0;
-      font-size: 1.1em;
-      font-weight: 500;
-    }
-    
-    .clock {
-      font-size: 1.1em;
-      opacity: 0.9;
-      margin-top: 5px;
-    }
-    
-    button {
-      font-size: 12px;
-      padding: 6px 10px;
-      border: none;
-      border-radius: 6px;
-      background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
-    }
-    
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    .btn-danger {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-    }
-    
-    .btn-success {
-      background: linear-gradient(45deg, #55a3ff, #003d82);
-      box-shadow: 0 4px 15px rgba(85, 163, 255, 0.3);
-    }
-    
-    .counter {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 5px 0;
-      padding: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 6px;
-    }
-    
-    .counter-label {
-      font-weight: 500;
-      min-width: 80px;
-    }
-    
-    .counter-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .counter button {
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    
-    .counter input {
-      width: 50px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: bold;
-      padding: 4px;
-      border: none;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.9);
-      color: #333;
-    }
-    
-    .numpad {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-      margin: 8px 0;
-    }
-    
-    .numpad button {
-      height: 32px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    
-    .wide-button {
-      grid-column: span 4;
-    }
-    
-    .info-display {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      margin: 5px 0;
-    }
-    
-    .info-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #ffd700;
-    }
-    
-    .summary {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 15px;
-      border-radius: 10px;
-      font-family: 'Courier New', monospace;
-      white-space: pre-line;
-      line-height: 1.6;
-      font-size: 14px;
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    
-    .action-buttons button {
-      flex: 1;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin: 8px 0;
-    }
-    
-    .stat-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 8px;
-      border-radius: 6px;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #ffd700;
-      display: block;
-    }
-    
-    .stat-label {
-      font-size: 10px;
-      opacity: 0.8;
-      margin-top: 2px;
-    }
-    
-    .estimation {
-      text-align: center;
-      padding: 10px;
-      background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.2));
-      border-radius: 8px;
-      border: 2px solid rgba(255, 215, 0, 0.3);
-      margin: 8px 0;
-    }
-    
-    .estimation-value {
-      font-size: 18px;
-      font-weight: bold;
-      color: #ffd700;
-    }
-    
-    input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.9);
-      color: #333;
-      font-size: 14px;
-      margin: 3px 0;
-    }
-    
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #4CAF50;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transform: translateX(400px);
-      transition: transform 0.3s ease;
-      z-index: 1000;
-    }
-    
-    .toast.show {
-      transform: translateX(0);
-    }
-    
-    @media (max-width: 480px) {
-      .container {
-        margin: 0;
-        border-radius: 0;
-        min-height: 100vh;
-      }
-      
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<title>ワンクリ入力 → テキストコピー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --gap:10px; --pad:12px; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin:16px; line-height:1.5; }
+  h1 { font-size:18px; margin:0 0 8px; }
+  .grid { display:grid; gap: var(--gap); }
+  .card { border:1px solid #ddd; border-radius:12px; padding: var(--pad); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { padding:8px 10px; border:1px solid #bbb; border-radius:10px; background:#fff; cursor:pointer; }
+  .btn[data-active="1"] { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
+  .btn.small { padding:6px 8px; font-size:12px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { padding:6px 10px; border:1px solid #ccc; border-radius:999px; cursor:pointer; background:#fff; }
+  .chip[data-active="1"] { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
+  .num { display:flex; align-items:center; gap:6px; }
+  .num .val { min-width:40px; text-align:right; font-variant-numeric: tabular-nums; }
+  input[type="text"], input[type="number"] { padding:8px; border:1px solid #bbb; border-radius:10px; }
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f5f5f5; padding:2px 6px; border-radius:6px; border:1px solid #e6e6e6; }
+  .muted { color:#666; font-size:12px; }
+  textarea { width:100%; min-height:70px; padding:10px; border:1px solid #bbb; border-radius:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cols { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .timegrid { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
+  .mins    { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
+  .footer { display:flex; gap:8px; flex-wrap:wrap; }
+  .notice { font-size:12px; color:#0a0; display:none; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🎰 マイジャグラー稼働記録 Pro</h1>
-      <div class="clock" id="clock"></div>
-    </header>
+  <h1>クリック入力 → 1行テキストをコピー</h1>
+  <div class="grid">
 
-    <div class="section">
-      <h2>📍 セッション開始</h2>
-      <button onclick="setStartTime()" class="btn-success">📅 開始時刻をセット</button>
-      
-      <div class="info-display">
-        <span>開始時刻</span>
-        <span class="info-value" id="startTime">--:--</span>
+    <!-- 時間 -->
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <strong>時間</strong>
+        <div class="row">
+          <button class="btn small" id="btn-now">今</button>
+          <button class="btn small" data-step="5"  data-ctrl="min-plus">+5分</button>
+          <button class="btn small" data-step="5"  data-ctrl="min-minus">-5分</button>
+        </div>
       </div>
-      
-      <div class="info-display">
-        <span>開始回転数</span>
-        <span class="info-value" id="startGames">0</span>
+      <div class="cols">
+        <div>
+          <div class="muted">時を選択</div>
+          <div class="timegrid" id="hours"></div>
+        </div>
+        <div>
+          <div class="muted">分を選択</div>
+          <div class="mins" id="minutes"></div>
+        </div>
       </div>
-      <div class="numpad" id="startGamesPad"></div>
-      
-      <div class="info-display">
-        <span>開始BIG</span>
-        <span class="info-value" id="startBig">0</span>
+      <div class="row" style="margin-top:8px">
+        <span class="muted">選択中：</span>
+        <span id="time-view" class="kbd">--:--</span>
       </div>
-      <div class="numpad" id="startBigPad"></div>
-      
-      <div class="info-display">
-        <span>開始REG</span>
-        <span class="info-value" id="startReg">0</span>
-      </div>
-      <div class="numpad" id="startRegPad"></div>
-      
-      <input type="number" id="startGrape" placeholder="開始ブドウ回数" />
-      <input type="number" id="startCherry" placeholder="開始チェリー回数" />
-      
-      <button onclick="saveStart()" class="wide-button">💾 開始データを保存</button>
     </div>
 
-    <div class="section">
-      <h2>🎯 現在の回転数</h2>
-      <div class="info-display">
-        <span>現在回転数</span>
-        <span class="info-value" id="currentGames">0</span>
+    <!-- 店名 -->
+    <div class="card">
+      <strong>店名</strong>
+      <div id="shops" class="chips" style="margin-top:6px"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="shop-input" type="text" placeholder="店名を入力して追加">
+        <button class="btn" id="shop-add">＋追加</button>
       </div>
-      <div class="numpad" id="currentGamesPad"></div>
     </div>
 
-    <div class="section">
-      <h2>🎰 当選データ</h2>
-      <div class="counter">
-        <span class="counter-label">単独BIG</span>
-        <div class="counter-controls">
-          <button onclick="adjust('tanBig', -1)">-</button>
-          <input id="tanBig" value="0" readonly>
-          <button onclick="adjust('tanBig', 1)">+</button>
-        </div>
+    <!-- 機種 -->
+    <div class="card">
+      <strong>機種</strong>
+      <div id="models" class="chips" style="margin-top:6px"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="model-input" type="text" placeholder="機種名を入力して追加">
+        <button class="btn" id="model-add">＋追加</button>
       </div>
-      
-      <div class="counter">
-        <span class="counter-label">チェBIG</span>
-        <div class="counter-controls">
-          <button onclick="adjust('cheBig', -1)">-</button>
-          <input id="cheBig" value="0" readonly>
-          <button onclick="adjust('cheBig', 1)">+</button>
+    </div>
+
+    <!-- 台番号 / 開始時データ -->
+    <div class="card">
+      <strong>台番号・開始時データ（BIG.REG.G）</strong>
+      <div class="cols" style="margin-top:6px">
+        <div class="row">
+          <span class="muted">台番号</span>
+          <input id="daino" type="number" inputmode="numeric" placeholder="例: 222" style="width:120px">
+          <button class="btn small" data-ctrl="daino-clear">クリア</button>
         </div>
-      </div>
-      
-      <div class="counter">
-        <span class="counter-label">単独REG</span>
-        <div class="counter-controls">
-          <button onclick="adjust('tanReg', -1)">-</button>
-          <input id="tanReg" value="0" readonly>
-          <button onclick="adjust('tanReg', 1)">+</button>
+        <div class="row">
+          <div class="num">
+            <span>BIG</span>
+            <button class="btn small" data-ctrl="big-minus">-1</button>
+            <span class="val" id="big-val">0</span>
+            <button class="btn small" data-ctrl="big-plus">+1</button>
+            <button class="btn small" data-ctrl="big-reset">0</button>
+          </div>
         </div>
-      </div>
-      
-      <div class="counter">
-        <span class="counter-label">チェREG</span>
-        <div class="counter-controls">
-          <button onclick="adjust('cheReg', -1)">-</button>
-          <input id="cheReg" value="0" readonly>
-          <button onclick="adjust('cheReg', 1)">+</button>
+        <div class="row">
+          <div class="num">
+            <span>REG</span>
+            <button class="btn small" data-ctrl="reg-minus">-1</button>
+            <span class="val" id="reg-val">0</span>
+            <button class="btn small" data-ctrl="reg-plus">+1</button>
+            <button class="btn small" data-ctrl="reg-reset">0</button>
+          </div>
         </div>
-      </div>
-      
-      <div class="counter">
-        <span class="counter-label">ブドウ</span>
-        <div class="counter-controls">
-          <button onclick="adjust('grape', -1)">-</button>
-          <input id="grape" value="0" readonly>
-          <button onclick="adjust('grape', 1)">+</button>
-        </div>
-      </div>
-      
-      <div class="counter">
-        <span class="counter-label">チェリー</span>
-        <div class="counter-controls">
-          <button onclick="adjust('cherry', -1)">-</button>
-          <input id="cherry" value="0" readonly>
-          <button onclick="adjust('cherry', 1)">+</button>
+        <div class="row">
+          <div class="num">
+            <span>G数</span>
+            <button class="btn small" data-ctrl="g-minus-100">-100</button>
+            <button class="btn small" data-ctrl="g-minus-10">-10</button>
+            <span class="val" id="g-val">0</span>
+            <button class="btn small" data-ctrl="g-plus-10">+10</button>
+            <button class="btn small" data-ctrl="g-plus-100">+100</button>
+            <button class="btn small" data-ctrl="g-reset">0</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="section">
-      <h2>📊 リアルタイム統計</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-value" id="totalBig">0</span>
-          <div class="stat-label">BIG合計</div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="totalReg">0</span>
-          <div class="stat-label">REG合計</div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="totalBonus">0</span>
-          <div class="stat-label">ボーナス合算</div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="playGames">0</span>
-          <div class="stat-label">実戦回転数</div>
+    <!-- 出力 -->
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <strong>出力（1行）</strong>
+        <div class="row">
+          <label class="row"><input type="radio" name="fmt" value="text" checked> テキスト</label>
+          <label class="row"><input type="radio" name="fmt" value="csv"> CSV</label>
         </div>
       </div>
-      
-      <div class="estimation">
-        <div>推定設定</div>
-        <div class="estimation-value" id="estimation">データ不足</div>
+      <textarea id="out" readonly></textarea>
+      <div class="footer">
+        <button class="btn" id="copy">コピー</button>
+        <button class="btn" id="clear">クリア</button>
+        <span id="copied" class="notice">コピーしました！</span>
+      </div>
+      <div class="muted" style="margin-top:6px">
+        例（テキスト）：<span class="kbd">10:07 ZAPP高陽 新花火 台番180 開始 0.0.240</span><br>
+        例（CSV）：<span class="kbd">10:07,ZAPP高陽,新花火,180,0,0,240</span>
       </div>
     </div>
 
-    <div class="section">
-      <h2>📋 詳細レポート</h2>
-      <div class="summary" id="summary">データを入力してください...</div>
-      
-      <div class="action-buttons">
-        <button onclick="copySummary()">📋 コピー</button>
-        <button onclick="exportData()">📤 エクスポート</button>
-        <button onclick="resetAll()" class="btn-danger">🧹 全クリア</button>
-      </div>
-    </div>
   </div>
-  
-  <div class="toast" id="toast"></div>
 
-  <script>
-    // データ永続化のための関数
-    function saveToStorage() {
-      const data = {
-        startTime: document.getElementById("startTime").textContent,
-        startGames: document.getElementById("startGames").textContent,
-        startBig: document.getElementById("startBig").textContent,
-        startReg: document.getElementById("startReg").textContent,
-        startGrape: document.getElementById("startGrape").value,
-        startCherry: document.getElementById("startCherry").value,
-        currentGames: document.getElementById("currentGames").textContent,
-        tanBig: document.getElementById("tanBig").value,
-        cheBig: document.getElementById("cheBig").value,
-        tanReg: document.getElementById("tanReg").value,
-        cheReg: document.getElementById("cheReg").value,
-        grape: document.getElementById("grape").value,
-        cherry: document.getElementById("cherry").value,
-        timestamp: Date.now()
-      };
-      
-      // メモリに保存（セッション中のみ有効）
-      window.jugglerData = data;
+<script>
+  // ===== プリセット（必要に応じて編集） =====
+  const PRESET_SHOPS = ["ZAPP高陽", "スーパーランド", "タワービクトリー", "サンズビクトリー", "BB東雲", "ナイアガラ2"];
+  const PRESET_MODELS = ["新花火", "マイジャグラー", "ハッピージャグラー", "ファンキージャグラー", "バーサス", "北斗", "マタドール"];
+
+  // ===== 状態 =====
+  const state = {
+    hour: null, minute: null,
+    shop: "", model: "",
+    daino: "", big: 0, reg: 0, g: 0,
+    fmt: "text"
+  };
+
+  // ===== ユーティリティ =====
+  const z2 = n => String(n).padStart(2, "0");
+  const clamp0 = n => Math.max(0, n|0);
+  function renderTime() {
+    const t = (state.hour==null || state.minute==null) ? "--:--" : `${z2(state.hour)}:${z2(state.minute)}`;
+    document.getElementById("time-view").textContent = t;
+  }
+  function renderOutput() {
+    let t = (state.hour==null || state.minute==null) ? "" : `${z2(state.hour)}:${z2(state.minute)}`;
+    const daino = state.daino ? ` 台番${state.daino}` : "";
+    const start = `${state.big}.${state.reg}.${state.g}`;
+    const fmt = state.fmt;
+    let line = "";
+    if (fmt === "csv") {
+      // 時間,店名,機種,台番号,開始BIG,開始REG,開始回転数
+      line = [t, state.shop, state.model, state.daino, state.big, state.reg, state.g].join(",");
+    } else {
+      // テキスト
+      line = `${t} ${state.shop} ${state.model}${daino} 開始 ${start}`.trim();
     }
+    document.getElementById("out").value = line.replace(/\s+/g, " ").trim();
+  }
+  function setActive(container, value) {
+    [...container.children].forEach(ch => ch.dataset.active = (ch.textContent === value) ? "1" : "0");
+  }
 
-    function loadFromStorage() {
-      if (window.jugglerData) {
-        const data = window.jugglerData;
-        document.getElementById("startTime").textContent = data.startTime || "--:--";
-        document.getElementById("startGames").textContent = data.startGames || "0";
-        document.getElementById("startBig").textContent = data.startBig || "0";
-        document.getElementById("startReg").textContent = data.startReg || "0";
-        document.getElementById("startGrape").value = data.startGrape || "0";
-        document.getElementById("startCherry").value = data.startCherry || "0";
-        document.getElementById("currentGames").textContent = data.currentGames || "0";
-        document.getElementById("tanBig").value = data.tanBig || "0";
-        document.getElementById("cheBig").value = data.cheBig || "0";
-        document.getElementById("tanReg").value = data.tanReg || "0";
-        document.getElementById("cheReg").value = data.cheReg || "0";
-        document.getElementById("grape").value = data.grape || "0";
-        document.getElementById("cherry").value = data.cherry || "0";
-        updateSummary();
-      }
-    }
-
-    // トースト通知
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = `toast show ${type}`;
-      setTimeout(() => {
-        toast.className = 'toast';
-      }, 3000);
-    }
-
-    // テンキー作成
-    const createNumpad = (targetId, labelId) => {
-      const pad = document.getElementById(targetId);
-      pad.innerHTML = '';
-      
-      // 数字ボタン 1-9
-      for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.onclick = () => {
-          const span = document.getElementById(labelId);
-          const currentValue = parseInt(span.textContent) || 0;
-          span.textContent = String(currentValue * 10 + i);
-          updateSummary();
-          saveToStorage();
-        };
-        pad.appendChild(btn);
-      }
-      
-      // 0ボタン
-      const zero = document.createElement('button');
-      zero.textContent = '0';
-      zero.onclick = () => {
-        const span = document.getElementById(labelId);
-        const currentValue = parseInt(span.textContent) || 0;
-        span.textContent = String(currentValue * 10);
-        updateSummary();
-        saveToStorage();
-      };
-      pad.appendChild(zero);
-      
-      // クリアボタン
-      const clear = document.createElement('button');
-      clear.textContent = 'C';
-      clear.className = 'btn-danger';
-      clear.onclick = () => {
-        document.getElementById(labelId).textContent = '0';
-        updateSummary();
-        saveToStorage();
-      };
-      pad.appendChild(clear);
-      
-      // 削除ボタン
-      const backspace = document.createElement('button');
-      backspace.textContent = '⌫';
-      backspace.onclick = () => {
-        const span = document.getElementById(labelId);
-        let value = span.textContent;
-        if (value.length > 1) {
-          span.textContent = value.slice(0, -1);
-        } else {
-          span.textContent = '0';
-        }
-        updateSummary();
-        saveToStorage();
-      };
-      pad.appendChild(backspace);
+  // ===== 時間UI生成 =====
+  const hoursEl = document.getElementById("hours");
+  for (let h=0; h<24; h++) {
+    const b = document.createElement("button");
+    b.className = "btn small";
+    b.textContent = z2(h);
+    b.onclick = () => { state.hour = h; renderTime(); renderOutput(); setActive(hoursEl, z2(h)); };
+    hoursEl.appendChild(b);
+  }
+  const minutesEl = document.getElementById("minutes");
+  const MIN_STEPS = [0,5,10,15,20,25,30,35,40,45,50,55];
+  MIN_STEPS.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "btn small";
+    b.textContent = z2(m);
+    b.onclick = () => { state.minute = m; renderTime(); renderOutput(); setActive(minutesEl, z2(m)); };
+    minutesEl.appendChild(b);
+  });
+  document.getElementById("btn-now").onclick = () => {
+    const d = new Date();
+    state.hour = d.getHours(); state.minute = d.getMinutes() - (d.getMinutes() % 5);
+    renderTime(); renderOutput();
+    setActive(hoursEl, z2(state.hour));
+    setActive(minutesEl, z2(state.minute));
+  };
+  document.querySelectorAll("[data-ctrl='min-plus'],[data-ctrl='min-minus']").forEach(btn=>{
+    btn.onclick = () => {
+      if (state.hour==null || state.minute==null) return;
+      const step = parseInt(btn.dataset.step||"5",10) * (btn.dataset.ctrl.includes("minus")?-1:1);
+      let total = state.hour*60 + state.minute + step;
+      if (total<0) total = 0;
+      if (total>23*60+55) total = 23*60+55;
+      state.hour = Math.floor(total/60);
+      state.minute = total%60 - (total%5);
+      renderTime(); renderOutput();
+      setActive(hoursEl, z2(state.hour));
+      setActive(minutesEl, z2(state.minute));
     };
+  });
 
-    function setStartTime() {
-      const now = new Date();
-      document.getElementById("startTime").textContent = now.toLocaleTimeString('ja-JP', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      saveToStorage();
-      showToast('開始時刻を設定しました');
+  // ===== 店名・機種 chips =====
+  function makeChips(list, mount, setter) {
+    mount.innerHTML = "";
+    list.forEach(txt=>{
+      const el = document.createElement("div");
+      el.className = "chip";
+      el.textContent = txt;
+      el.onclick = () => { setter(txt); };
+      mount.appendChild(el);
+    });
+  }
+  const shopsEl = document.getElementById("shops");
+  const modelsEl = document.getElementById("models");
+  let shops = [...PRESET_SHOPS];
+  let models = [...PRESET_MODELS];
+
+  function setShop(v){ state.shop = v; setActive(shopsEl, v); renderOutput(); }
+  function setModel(v){ state.model = v; setActive(modelsEl, v); renderOutput(); }
+
+  makeChips(shops, shopsEl, setShop);
+  makeChips(models, modelsEl, setModel);
+
+  document.getElementById("shop-add").onclick = ()=>{
+    const v = document.getElementById("shop-input").value.trim();
+    if(!v) return;
+    shops.unshift(v);
+    makeChips(shops, shopsEl, setShop);
+    setShop(v);
+    document.getElementById("shop-input").value = "";
+  };
+  document.getElementById("model-add").onclick = ()=>{
+    const v = document.getElementById("model-input").value.trim();
+    if(!v) return;
+    models.unshift(v);
+    makeChips(models, modelsEl, setModel);
+    setModel(v);
+    document.getElementById("model-input").value = "";
+  };
+
+  // ===== 台番号 & 開始データ =====
+  const daino = document.getElementById("daino");
+  daino.addEventListener("input", ()=>{ state.daino = daino.value.replace(/[^\d]/g,""); daino.value = state.daino; renderOutput(); });
+  document.querySelector("[data-ctrl='daino-clear']").onclick = ()=>{ state.daino=""; daino.value=""; renderOutput(); };
+
+  const bigVal = document.getElementById("big-val");
+  const regVal = document.getElementById("reg-val");
+  const gVal   = document.getElementById("g-val");
+  function syncVals(){ bigVal.textContent=state.big; regVal.textContent=state.reg; gVal.textContent=state.g; renderOutput(); }
+
+  const ctrls = {
+    "big-plus": ()=>{ state.big = clamp0(state.big+1); },
+    "big-minus": ()=>{ state.big = clamp0(state.big-1); },
+    "big-reset": ()=>{ state.big = 0; },
+    "reg-plus": ()=>{ state.reg = clamp0(state.reg+1); },
+    "reg-minus": ()=>{ state.reg = clamp0(state.reg-1); },
+    "reg-reset": ()=>{ state.reg = 0; },
+    "g-plus-10": ()=>{ state.g = clamp0(state.g+10); },
+    "g-plus-100": ()=>{ state.g = clamp0(state.g+100); },
+    "g-minus-10": ()=>{ state.g = clamp0(state.g-10); },
+    "g-minus-100": ()=>{ state.g = clamp0(state.g-100); },
+    "g-reset": ()=>{ state.g = 0; }
+  };
+  document.querySelectorAll("[data-ctrl]").forEach(btn=>{
+    const k = btn.dataset.ctrl;
+    if (ctrls[k]) btn.onclick = ()=>{ ctrls[k](); syncVals(); };
+  });
+
+  // ===== 出力 =====
+  document.querySelectorAll("input[name='fmt']").forEach(r=>{
+    r.onchange = ()=>{ state.fmt = r.value; renderOutput(); };
+  });
+
+  document.getElementById("copy").onclick = async ()=>{
+    const txt = document.getElementById("out").value;
+    try { await navigator.clipboard.writeText(txt); } catch(e) {
+      // フォールバック
+      const ta = document.getElementById("out");
+      ta.select(); document.execCommand("copy");
     }
+    const n = document.getElementById("copied");
+    n.style.display = "inline";
+    setTimeout(()=> n.style.display = "none", 1200);
+  };
 
-    function saveStart() {
-      updateSummary();
-      saveToStorage();
-      showToast('開始データを保存しました');
-    }
+  document.getElementById("clear").onclick = ()=>{
+    state.hour = state.minute = null;
+    state.shop = state.model = ""; state.daino = "";
+    state.big = state.reg = state.g = 0;
+    document.getElementById("daino").value = "";
+    renderTime(); syncVals();
+    setActive(shopsEl, "_"); setActive(modelsEl, "_");
+    document.getElementById("out").value = "";
+  };
 
-    function adjust(id, delta) {
-      const input = document.getElementById(id);
-      const newValue = Math.max(0, parseInt(input.value) + delta);
-      input.value = newValue;
-      updateSummary();
-      saveToStorage();
-    }
-
-    function resetAll() {
-      if (!confirm('すべてのデータをクリアしますか？')) return;
-      
-      document.querySelectorAll("input").forEach(el => el.value = "0");
-      document.querySelectorAll("span[id$='Games'], span[id$='Big'], span[id$='Reg']").forEach(el => el.textContent = "0");
-      document.getElementById("startTime").textContent = "--:--";
-      document.getElementById("summary").textContent = "データを入力してください...";
-      
-      // メモリからも削除
-      delete window.jugglerData;
-      
-      updateSummary();
-      showToast('データをクリアしました', 'info');
-    }
-
-    function copySummary() {
-      const text = document.getElementById("summary").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        showToast('レポートをコピーしました');
-      }).catch(() => {
-        showToast('コピーに失敗しました', 'error');
-      });
-    }
-
-    function exportData() {
-      const data = {
-        date: new Date().toLocaleDateString('ja-JP'),
-        time: new Date().toLocaleTimeString('ja-JP'),
-        summary: document.getElementById("summary").textContent,
-        rawData: window.jugglerData || {}
-      };
-      
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `juggler_data_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      showToast('データをエクスポートしました');
-    }
-
-    function updateSummary() {
-      const playGames = parseInt(document.getElementById("currentGames").textContent) - parseInt(document.getElementById("startGames").textContent);
-      const tanBig = parseInt(document.getElementById("tanBig").value) || 0;
-      const cheBig = parseInt(document.getElementById("cheBig").value) || 0;
-      const tanReg = parseInt(document.getElementById("tanReg").value) || 0;
-      const cheReg = parseInt(document.getElementById("cheReg").value) || 0;
-      const grape = parseInt(document.getElementById("grape").value) || 0;
-      const cherry = parseInt(document.getElementById("cherry").value) || 0;
-      
-      const totalBig = tanBig + cheBig;
-      const totalReg = tanReg + cheReg;
-      const totalBonus = totalBig + totalReg;
-      
-      // リアルタイム統計更新
-      document.getElementById("totalBig").textContent = totalBig;
-      document.getElementById("totalReg").textContent = totalReg;
-      document.getElementById("totalBonus").textContent = totalBonus;
-      document.getElementById("playGames").textContent = playGames;
-      
-      const bonusRatio = totalBonus > 0 ? (playGames / totalBonus).toFixed(1) : '--';
-      const rate = (value) => value > 0 ? (playGames / value).toFixed(1) : '--';
-      
-      // 設定推定ロジック改善
-      let estimation = 'データ不足';
-      if (playGames >= 1000 && totalBonus >= 3) {
-        const ratio = parseFloat(bonusRatio);
-        if (ratio < 120) estimation = '設定6濃厚 🔥';
-        else if (ratio < 135) estimation = '設定5以上 ⭐';
-        else if (ratio < 150) estimation = '設定4以上 👍';
-        else if (ratio < 160) estimation = '設定2-3 😐';
-        else estimation = '設定1 😞';
-      } else if (playGames >= 500 && totalBonus >= 2) {
-        estimation = 'データ少なめ 📊';
-      }
-      
-      document.getElementById("estimation").textContent = estimation;
-      
-      // 詳細レポート
-      const startTime = document.getElementById("startTime").textContent;
-      const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-      
-      const report = 
-        `🎰 マイジャグラー稼働レポート\n` +
-        `📅 ${new Date().toLocaleDateString('ja-JP')} ${startTime} ～ ${currentTime}\n\n` +
-        `📊 基本データ\n` +
-        `・実戦回転数: ${playGames}G\n` +
-        `・BIG: ${totalBig}回 REG: ${totalReg}回\n` +
-        `・ボーナス合算: 1/${bonusRatio}\n\n` +
-        `🎯 詳細データ\n` +
-        `・単独BIG: ${tanBig}回 (1/${rate(tanBig)})\n` +
-        `・チェBIG: ${cheBig}回 (1/${rate(cheBig)})\n` +
-        `・単独REG: ${tanReg}回 (1/${rate(tanReg)})\n` +
-        `・チェREG: ${cheReg}回 (1/${rate(cheReg)})\n` +
-        `・ブドウ: ${grape}回 (1/${rate(grape)})\n` +
-        `・チェリー: ${cherry}回 (1/${rate(cherry)})\n\n` +
-        `🔮 推定設定: ${estimation}\n\n` +
-        `💰 収支目安\n` +
-        `・投資: 約${Math.floor(playGames / 50 * 1000).toLocaleString()}円 (50枚/1000円)\n` +
-        `・獲得: 約${(totalBig * 300 + totalReg * 100).toLocaleString()}枚\n` +
-        `\n#マイジャグラー #パチスロ稼働`;
-
-      document.getElementById("summary").textContent = report;
-    }
-
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleTimeString('ja-JP');
-    }
-
-    // 初期化
-    function init() {
-      // テンキー生成
-      createNumpad("startGamesPad", "startGames");
-      createNumpad("startBigPad", "startBig");
-      createNumpad("startRegPad", "startReg");
-      createNumpad("currentGamesPad", "currentGames");
-      
-      // 時計開始
-      setInterval(updateClock, 1000);
-      updateClock();
-      
-      // データ復元
-      loadFromStorage();
-      
-      // 初期表示更新
-      updateSummary();
-    }
-
-    // ページ読み込み時に初期化
-    document.addEventListener('DOMContentLoaded', init);
-    
-    // ページ離脱前にデータ保存
-    window.addEventListener('beforeunload', saveToStorage);
-  </script>
+  // 初期描画
+  renderTime(); syncVals(); renderOutput();
+</script>
 </body>
 </html>
