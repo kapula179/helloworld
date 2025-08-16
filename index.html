@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>ワンクリ入力 → テキストコピー</title>
+<title>クリック入力 → テキスト/CSVコピー（投資対応）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root { --gap:10px; --pad:12px; }
@@ -13,26 +13,26 @@
   .card { border:1px solid #ddd; border-radius:12px; padding: var(--pad); }
   .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .btn { padding:8px 10px; border:1px solid #bbb; border-radius:10px; background:#fff; cursor:pointer; }
-  .btn[data-active="1"] { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
   .btn.small { padding:6px 8px; font-size:12px; }
+  .btn.ghost { background:#f8f8f8; }
   .chips { display:flex; flex-wrap:wrap; gap:6px; }
   .chip { padding:6px 10px; border:1px solid #ccc; border-radius:999px; cursor:pointer; background:#fff; }
   .chip[data-active="1"] { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
-  .num { display:flex; align-items:center; gap:6px; }
-  .num .val { min-width:40px; text-align:right; font-variant-numeric: tabular-nums; }
   input[type="text"], input[type="number"] { padding:8px; border:1px solid #bbb; border-radius:10px; }
+  input[type="number"] { width:120px; }
   .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f5f5f5; padding:2px 6px; border-radius:6px; border:1px solid #e6e6e6; }
   .muted { color:#666; font-size:12px; }
-  textarea { width:100%; min-height:70px; padding:10px; border:1px solid #bbb; border-radius:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  textarea { width:100%; min-height:90px; padding:10px; border:1px solid #bbb; border-radius:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .cols { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .timegrid { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
   .mins    { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
-  .footer { display:flex; gap:8px; flex-wrap:wrap; }
   .notice { font-size:12px; color:#0a0; display:none; }
+  .numbox { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .numbox .step { display:flex; gap:6px; }
 </style>
 </head>
 <body>
-  <h1>クリック入力 → 1行テキストをコピー</h1>
+  <h1>クリック入力 → 1行テキスト/CSVをコピー（投資対応）</h1>
   <div class="grid">
 
     <!-- 時間 -->
@@ -81,42 +81,74 @@
       </div>
     </div>
 
-    <!-- 台番号 / 開始時データ -->
+    <!-- 台番号 / 開始時データ / 投資 -->
     <div class="card">
-      <strong>台番号・開始時データ（BIG.REG.G）</strong>
+      <strong>台番号・開始時データ・投資</strong>
       <div class="cols" style="margin-top:6px">
         <div class="row">
           <span class="muted">台番号</span>
-          <input id="daino" type="number" inputmode="numeric" placeholder="例: 222" style="width:120px">
-          <button class="btn small" data-ctrl="daino-clear">クリア</button>
+          <input id="daino" type="number" inputmode="numeric" placeholder="例: 222">
+          <button class="btn small ghost" data-ctrl="daino-clear">クリア</button>
         </div>
-        <div class="row">
-          <div class="num">
-            <span>BIG</span>
-            <button class="btn small" data-ctrl="big-minus">-1</button>
-            <span class="val" id="big-val">0</span>
-            <button class="btn small" data-ctrl="big-plus">+1</button>
-            <button class="btn small" data-ctrl="big-reset">0</button>
+
+        <!-- BIG -->
+        <div class="numbox">
+          <label>BIG</label>
+          <input id="big-input" type="number" inputmode="numeric" min="0" value="0">
+          <div class="step">
+            <button class="btn small" data-ctrl="big-+1">+1</button>
+            <button class="btn small" data-ctrl="big-+5">+5</button>
+            <button class="btn small" data-ctrl="big-+10">+10</button>
+            <button class="btn small" data-ctrl="big-+30">+30</button>
+            <button class="btn small ghost" data-ctrl="big-reset">0</button>
           </div>
         </div>
-        <div class="row">
-          <div class="num">
-            <span>REG</span>
-            <button class="btn small" data-ctrl="reg-minus">-1</button>
-            <span class="val" id="reg-val">0</span>
-            <button class="btn small" data-ctrl="reg-plus">+1</button>
-            <button class="btn small" data-ctrl="reg-reset">0</button>
+
+        <!-- REG -->
+        <div class="numbox">
+          <label>REG</label>
+          <input id="reg-input" type="number" inputmode="numeric" min="0" value="0">
+          <div class="step">
+            <button class="btn small" data-ctrl="reg-+1">+1</button>
+            <button class="btn small" data-ctrl="reg-+5">+5</button>
+            <button class="btn small" data-ctrl="reg-+10">+10</button>
+            <button class="btn small ghost" data-ctrl="reg-reset">0</button>
           </div>
         </div>
-        <div class="row">
-          <div class="num">
-            <span>G数</span>
-            <button class="btn small" data-ctrl="g-minus-100">-100</button>
-            <button class="btn small" data-ctrl="g-minus-10">-10</button>
-            <span class="val" id="g-val">0</span>
-            <button class="btn small" data-ctrl="g-plus-10">+10</button>
-            <button class="btn small" data-ctrl="g-plus-100">+100</button>
-            <button class="btn small" data-ctrl="g-reset">0</button>
+
+        <!-- G -->
+        <div class="numbox">
+          <label>G数</label>
+          <input id="g-input" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="step">
+            <button class="btn small" data-ctrl="g-+1">+1</button>
+            <button class="btn small" data-ctrl="g-+10">+10</button>
+            <button class="btn small" data-ctrl="g-+50">+50</button>
+            <button class="btn small" data-ctrl="g-+100">+100</button>
+            <button class="btn small ghost" data-ctrl="g-reset">0</button>
+          </div>
+        </div>
+
+        <!-- 投資：貯メダル / 現金 -->
+        <div class="numbox">
+          <label>貯メダル投資(枚)</label>
+          <input id="coin-input" type="number" inputmode="numeric" min="0" step="10" value="0">
+          <div class="step">
+            <button class="btn small" data-ctrl="coin-+10">+10</button>
+            <button class="btn small" data-ctrl="coin-+50">+50</button>
+            <button class="btn small" data-ctrl="coin-+100">+100</button>
+            <button class="btn small ghost" data-ctrl="coin-reset">0</button>
+          </div>
+        </div>
+
+        <div class="numbox">
+          <label>現金投資(円)</label>
+          <input id="cash-input" type="number" inputmode="numeric" min="0" step="1000" value="0">
+          <div class="step">
+            <button class="btn small" data-ctrl="cash-+1000">+1,000</button>
+            <button class="btn small" data-ctrl="cash-+2000">+2,000</button>
+            <button class="btn small" data-ctrl="cash-+5000">+5,000</button>
+            <button class="btn small ghost" data-ctrl="cash-reset">0</button>
           </div>
         </div>
       </div>
@@ -132,14 +164,14 @@
         </div>
       </div>
       <textarea id="out" readonly></textarea>
-      <div class="footer">
+      <div class="row">
         <button class="btn" id="copy">コピー</button>
         <button class="btn" id="clear">クリア</button>
         <span id="copied" class="notice">コピーしました！</span>
       </div>
       <div class="muted" style="margin-top:6px">
-        例（テキスト）：<span class="kbd">10:07 ZAPP高陽 新花火 台番180 開始 0.0.240</span><br>
-        例（CSV）：<span class="kbd">10:07,ZAPP高陽,新花火,180,0,0,240</span>
+        例（テキスト）：<span class="kbd">10:07 ZAPP高陽 新花火 台番180 開始 0.0.240 投資 300枚/9000円</span><br>
+        例（CSV）：<span class="kbd">10:07,ZAPP高陽,新花火,180,0,0,240,300,9000</span>
       </div>
     </div>
 
@@ -154,32 +186,41 @@
   const state = {
     hour: null, minute: null,
     shop: "", model: "",
-    daino: "", big: 0, reg: 0, g: 0,
+    daino: "",
+    big: 0, reg: 0, g: 0,
+    coin: 0, cash: 0,
     fmt: "text"
   };
 
   // ===== ユーティリティ =====
   const z2 = n => String(n).padStart(2, "0");
-  const clamp0 = n => Math.max(0, n|0);
+  const clamp0 = n => Math.max(0, (parseInt(n,10)||0));
+
   function renderTime() {
     const t = (state.hour==null || state.minute==null) ? "--:--" : `${z2(state.hour)}:${z2(state.minute)}`;
     document.getElementById("time-view").textContent = t;
   }
+
+  function getTimeString(){
+    return (state.hour==null || state.minute==null) ? "" : `${z2(state.hour)}:${z2(state.minute)}`;
+  }
+
   function renderOutput() {
-    let t = (state.hour==null || state.minute==null) ? "" : `${z2(state.hour)}:${z2(state.minute)}`;
+    const t = getTimeString();
     const daino = state.daino ? ` 台番${state.daino}` : "";
     const start = `${state.big}.${state.reg}.${state.g}`;
-    const fmt = state.fmt;
+    const investText = (state.coin||state.cash) ? ` 投資 ${state.coin}枚/${state.cash}円` : "";
     let line = "";
-    if (fmt === "csv") {
-      // 時間,店名,機種,台番号,開始BIG,開始REG,開始回転数
-      line = [t, state.shop, state.model, state.daino, state.big, state.reg, state.g].join(",");
+
+    if (state.fmt === "csv") {
+      // 時間,店名,機種,台番号,開始BIG,開始REG,開始回転数,貯メダル投資(枚),現金投資(円)
+      line = [t, state.shop, state.model, state.daino, state.big, state.reg, state.g, state.coin, state.cash].join(",");
     } else {
-      // テキスト
-      line = `${t} ${state.shop} ${state.model}${daino} 開始 ${start}`.trim();
+      line = `${t} ${state.shop} ${state.model}${daino} 開始 ${start}${investText}`.trim();
     }
     document.getElementById("out").value = line.replace(/\s+/g, " ").trim();
   }
+
   function setActive(container, value) {
     [...container.children].forEach(ch => ch.dataset.active = (ch.textContent === value) ? "1" : "0");
   }
@@ -214,8 +255,7 @@
       if (state.hour==null || state.minute==null) return;
       const step = parseInt(btn.dataset.step||"5",10) * (btn.dataset.ctrl.includes("minus")?-1:1);
       let total = state.hour*60 + state.minute + step;
-      if (total<0) total = 0;
-      if (total>23*60+55) total = 23*60+55;
+      total = Math.min(Math.max(total,0), 23*60+55);
       state.hour = Math.floor(total/60);
       state.minute = total%60 - (total%5);
       renderTime(); renderOutput();
@@ -263,32 +303,39 @@
     document.getElementById("model-input").value = "";
   };
 
-  // ===== 台番号 & 開始データ =====
+  // ===== 数値入力ヘルパ =====
+  function bindNumber(id, key) {
+    const el = document.getElementById(id);
+    el.addEventListener("input", ()=>{ state[key] = clamp0(el.value); renderOutput(); });
+  }
+  bindNumber("big-input",  "big");
+  bindNumber("reg-input",  "reg");
+  bindNumber("g-input",    "g");
+  bindNumber("coin-input", "coin");
+  bindNumber("cash-input", "cash");
+
   const daino = document.getElementById("daino");
   daino.addEventListener("input", ()=>{ state.daino = daino.value.replace(/[^\d]/g,""); daino.value = state.daino; renderOutput(); });
   document.querySelector("[data-ctrl='daino-clear']").onclick = ()=>{ state.daino=""; daino.value=""; renderOutput(); };
 
-  const bigVal = document.getElementById("big-val");
-  const regVal = document.getElementById("reg-val");
-  const gVal   = document.getElementById("g-val");
-  function syncVals(){ bigVal.textContent=state.big; regVal.textContent=state.reg; gVal.textContent=state.g; renderOutput(); }
-
-  const ctrls = {
-    "big-plus": ()=>{ state.big = clamp0(state.big+1); },
-    "big-minus": ()=>{ state.big = clamp0(state.big-1); },
-    "big-reset": ()=>{ state.big = 0; },
-    "reg-plus": ()=>{ state.reg = clamp0(state.reg+1); },
-    "reg-minus": ()=>{ state.reg = clamp0(state.reg-1); },
-    "reg-reset": ()=>{ state.reg = 0; },
-    "g-plus-10": ()=>{ state.g = clamp0(state.g+10); },
-    "g-plus-100": ()=>{ state.g = clamp0(state.g+100); },
-    "g-minus-10": ()=>{ state.g = clamp0(state.g-10); },
-    "g-minus-100": ()=>{ state.g = clamp0(state.g-100); },
-    "g-reset": ()=>{ state.g = 0; }
+  // ===== ＋ボタン群 =====
+  const inc = (k, by)=>{ state[k] = clamp0(state[k] + by); document.getElementById(`${k}-input`).value = state[k]; renderOutput(); };
+  const resets = {
+    "big-reset": ()=>{ state.big=0; document.getElementById("big-input").value=0; },
+    "reg-reset": ()=>{ state.reg=0; document.getElementById("reg-input").value=0; },
+    "g-reset":   ()=>{ state.g=0;   document.getElementById("g-input").value=0;   },
+    "coin-reset":()=>{ state.coin=0;document.getElementById("coin-input").value=0;},
+    "cash-reset":()=>{ state.cash=0;document.getElementById("cash-input").value=0;}
   };
+
   document.querySelectorAll("[data-ctrl]").forEach(btn=>{
-    const k = btn.dataset.ctrl;
-    if (ctrls[k]) btn.onclick = ()=>{ ctrls[k](); syncVals(); };
+    const c = btn.dataset.ctrl;
+    if (c.startsWith("big-+"))  btn.onclick = ()=> inc("big",  parseInt(c.split("+")[1],10));
+    if (c.startsWith("reg-+"))  btn.onclick = ()=> inc("reg",  parseInt(c.split("+")[1],10));
+    if (c.startsWith("g-+"))    btn.onclick = ()=> inc("g",    parseInt(c.split("+")[1],10));
+    if (c.startsWith("coin-+")) btn.onclick = ()=> inc("coin", parseInt(c.split("+")[1],10));
+    if (c.startsWith("cash-+")) btn.onclick = ()=> inc("cash", parseInt(c.split("+")[1],10));
+    if (resets[c]) btn.onclick = ()=>{ resets[c](); renderOutput(); };
   });
 
   // ===== 出力 =====
@@ -299,7 +346,6 @@
   document.getElementById("copy").onclick = async ()=>{
     const txt = document.getElementById("out").value;
     try { await navigator.clipboard.writeText(txt); } catch(e) {
-      // フォールバック
       const ta = document.getElementById("out");
       ta.select(); document.execCommand("copy");
     }
@@ -312,14 +358,16 @@
     state.hour = state.minute = null;
     state.shop = state.model = ""; state.daino = "";
     state.big = state.reg = state.g = 0;
+    state.coin = state.cash = 0;
+    ["big","reg","g","coin","cash"].forEach(k=> document.getElementById(`${k}-input`).value=0);
     document.getElementById("daino").value = "";
-    renderTime(); syncVals();
+    renderTime(); renderOutput();
     setActive(shopsEl, "_"); setActive(modelsEl, "_");
     document.getElementById("out").value = "";
   };
 
   // 初期描画
-  renderTime(); syncVals(); renderOutput();
+  renderTime(); renderOutput();
 </script>
 </body>
 </html>
